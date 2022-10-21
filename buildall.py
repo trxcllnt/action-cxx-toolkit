@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import subprocess
+import os, subprocess
 
 clang_versions = list(range(7, 15 + 1))
 gcc_versions = list(range(7, 11 + 1))
@@ -155,11 +155,16 @@ def main():
                 {"gcc": v}
             )
 
+    repo = os.environ.get(
+        'ACTION_CXX_TOOLKIT_REPO',
+        'lucteo/action-cxx-toolkit'
+    )
+
     with open("docker-compose.yml", "w") as f:
         f.write("services:\n")
-        f.write("""
+        f.write(f"""
   main:
-    image: lucteo/action-cxx-toolkit.main
+    image: {repo}:main
     build:
       context: .
       dockerfile: Dockerfile.main
@@ -167,7 +172,7 @@ def main():
         for v in clang_versions:
             f.write(f"""
   clang{v}:
-    image: lucteo/action-cxx-toolkit.clang{v}
+    image: {repo}:clang{v}
     build:
       context: .
       dockerfile: Dockerfile.clang{v}
@@ -175,7 +180,7 @@ def main():
         for v in gcc_versions:
             f.write(f"""
   gcc{v}:
-    image: lucteo/action-cxx-toolkit.gcc{v}
+    image: {repo}:gcc{v}
     build:
       context: .
       dockerfile: Dockerfile.gcc{v}
@@ -183,7 +188,7 @@ def main():
             for cuda_ver in nvcc_versions:
                 f.write(f"""
   gcc{v}-cuda{cuda_ver}:
-    image: lucteo/action-cxx-toolkit.gcc{v}-cuda{cuda_ver}
+    image: {repo}:gcc{v}-cuda{cuda_ver}
     build:
       context: .
       dockerfile: Dockerfile.gcc{v}-cuda{cuda_ver}
@@ -193,7 +198,7 @@ def main():
                 cuda_ver = nvhpc_ver["cuda_ver"]
                 f.write(f"""
   gcc{v}-cuda{cuda_ver}-nvhpc{hpc_ver}:
-    image: lucteo/action-cxx-toolkit.gcc{v}-cuda{cuda_ver}-nvhpc{hpc_ver}
+    image: {repo}:gcc{v}-cuda{cuda_ver}-nvhpc{hpc_ver}
     build:
       context: .
       dockerfile: Dockerfile.gcc{v}-cuda{cuda_ver}-nvhpc{hpc_ver}
