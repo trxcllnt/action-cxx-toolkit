@@ -11,7 +11,7 @@ rm -f ${CURDIR}/lcov.info
 
 docker run $ci_env --rm -it --workdir /github/workspace -v "${CURDIR}":/github/workspace \
     -e INPUT_CHECKS='coverage=lcov' \
-    lucteo/action-cxx-toolkit.main
+    ${ACTION_CXX_TOOLKIT_REPO:-lucteo/action-cxx-toolkit.}main-ubuntu22.04
 status=$?
 
 # Check if the test succeeded

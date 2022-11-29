@@ -9,6 +9,10 @@ realpath() {
 }
 CURDIR=$(realpath $(dirname "$0"))
 
+if [ -n "$ACTION_CXX_TOOLKIT_REPO" ]; then
+    export ACTION_CXX_TOOLKIT_REPO="$ACTION_CXX_TOOLKIT_REPO:"
+fi
+
 ${CURDIR}/basic/test.sh
 ${CURDIR}/simple_make/test.sh
 ${CURDIR}/simple_cmake/test.sh

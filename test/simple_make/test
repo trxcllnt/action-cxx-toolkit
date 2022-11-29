@@ -12,7 +12,7 @@ rm -f ${CURDIR}/test_app
 
 docker run --rm -it --workdir /github/workspace -v "${CURDIR}":/github/workspace \
     -e INPUT_CC='clang' \
-    lucteo/action-cxx-toolkit.main
+    ${ACTION_CXX_TOOLKIT_REPO:-lucteo/action-cxx-toolkit.}main-ubuntu22.04
 
 # Check if the test succeeded
 if [ -f ${CURDIR}/test_app ]; then

@@ -11,7 +11,7 @@ docker run --rm -it --workdir /github/workspace -v "${CURDIR}":/github/workspace
     -e INPUT_CHECKS='clang-tidy' \
     -e INPUT_POSTBUILD_COMMAND='cp /tmp/build/test_app /github/workspace/' \
     -e INPUT_CC='clang-9' \
-    lucteo/action-cxx-toolkit.main
+    ${ACTION_CXX_TOOLKIT_REPO:-lucteo/action-cxx-toolkit.}main-ubuntu22.04
 status=$?
 
 # Check if the test succeeded -- we have a failure

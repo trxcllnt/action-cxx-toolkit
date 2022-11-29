@@ -10,7 +10,7 @@ CURDIR=$(realpath $(dirname "$0"))
 docker run --rm -it --workdir /github/workspace -v "${CURDIR}":/github/workspace \
     -e INPUT_CHECKS='clang-tidy' \
     -e INPUT_CC='clang' \
-    lucteo/action-cxx-toolkit.main
+    ${ACTION_CXX_TOOLKIT_REPO:-lucteo/action-cxx-toolkit.}main-ubuntu22.04
 status=$?
 
 # Check if the test succeeded

@@ -21,7 +21,7 @@ docker run --rm -it --workdir /github/workspace -v "${CURDIR}":/github/workspace
     -e INPUT_PREBUILD_COMMAND='pwd; ls' \
     -e INPUT_BUILD_COMMAND='echo "Hello, world!" > /github/workspace/greeting' \
     -e INPUT_POSTBUILD_COMMAND='ls /github/workspace' \
-    lucteo/action-cxx-toolkit.main
+    ${ACTION_CXX_TOOLKIT_REPO:-lucteo/action-cxx-toolkit.}main-ubuntu22.04
 
 # Check if the test succeeded
 if [ -f ${CURDIR}/greeting ]; then
