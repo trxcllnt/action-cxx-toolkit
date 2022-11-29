@@ -2,3 +2,5 @@
 .md
 LICENSE
 test/
+docker-compose*.yml
+Dockerfile.*
