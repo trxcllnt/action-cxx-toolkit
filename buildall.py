@@ -50,7 +50,7 @@ RUN set -xe; \\
     apt update; \\
     # Install generic build tools & python
     apt install -y --no-install-recommends \\
-        pkg-config make \\
+        pkg-config make ninja-build \\
         python3 python3-pip python3-setuptools \\
         ; \\
     # Install CMake
@@ -87,8 +87,8 @@ def _get_compiler_text(compilers, extra_packages=""):
     """Get the text to install the compilers and tools. `compilers` param is a dictionary: name -> ver"""
     assert "clang" in compilers or "gcc" in compilers
     alts = []
-    pre_install = "apt -y update;"
     packages = ""
+    pre_install = ""
 
     if "clang" in compilers:
         v = compilers["clang"]
@@ -103,9 +103,8 @@ def _get_compiler_text(compilers, extra_packages=""):
                 f'apt-add-repository -y -n "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs){llvm_dev_ver} main"'
             ]
 
-        pre_install = ""
         if len(llvm_apt_repos) > 0:
-            pre_install = "; \\\n    ".join(llvm_apt_repos) + "; \\\n    "
+            pre_install += "; \\\n    ".join(llvm_apt_repos) + "; \\\n    "
         pre_install += f"""apt update; \\
     v="{llvm_apt_ver}"; \\
     apt policy llvm-$v; \\
@@ -143,14 +142,18 @@ def _get_compiler_text(compilers, extra_packages=""):
 
     if "gcc" in compilers:
         v = compilers["gcc"]
-        packages += f" g++-{v}"
+        packages += f" cpp-{v} gcc-{v} g++-{v} gfortran-{v}"
         alts.extend(
             [
                 ("gcc", f"/usr/bin/gcc-{v}"),
                 ("g++", f"/usr/bin/g++-{v}"),
                 ("gcov", f"/usr/bin/gcov-{v}"),
+                ("gfortran", f"/usr/bin/gfortran-{v}"),
             ]
         )
+        pre_install += """apt remove -y cpp gcc g++ gfortran || true; \\
+    apt autoremove -y; \\
+    apt update;"""
 
     if extra_packages:
         packages += f" {extra_packages}"
@@ -177,10 +180,8 @@ def generate_docker(filename, base_image, compilers, extra_packages=""):
 
 
 def main():
-    repo = os.environ.get(
-        'ACTION_CXX_TOOLKIT_REPO',
-        'lucteo/action-cxx-toolkit'
-    )
+    repo = os.environ.get('ACTION_CXX_TOOLKIT_REPO', 'lucteo/action-cxx-toolkit')
+    sep = "." if repo == "lucteo/action-cxx-toolkit" else ":"
 
     with open(f"docker-compose.yml", "w") as f:
         f.write("services:\n")
@@ -222,7 +223,7 @@ def main():
 
             f.write(f"""
   main-ubuntu{ubuntu_version}:
-    image: {repo}:main-ubuntu{ubuntu_version}
+    image: {repo}{sep}main-ubuntu{ubuntu_version}
     build:
       context: .
       dockerfile: Dockerfile.main-ubuntu{ubuntu_version}
@@ -230,7 +231,7 @@ def main():
             for v in clang_versions:
                 f.write(f"""
   clang{v}-ubuntu{ubuntu_version}:
-    image: {repo}:clang{v}-ubuntu{ubuntu_version}
+    image: {repo}{sep}clang{v}-ubuntu{ubuntu_version}
     build:
       context: .
       dockerfile: Dockerfile.clang{v}-ubuntu{ubuntu_version}
@@ -238,7 +239,7 @@ def main():
             for v in gcc_versions:
                 f.write(f"""
   gcc{v}-ubuntu{ubuntu_version}:
-    image: {repo}:gcc{v}-ubuntu{ubuntu_version}
+    image: {repo}{sep}gcc{v}-ubuntu{ubuntu_version}
     build:
       context: .
       dockerfile: Dockerfile.gcc{v}-ubuntu{ubuntu_version}
@@ -246,7 +247,7 @@ def main():
                 for cuda_ver in nvcc_versions:
                     f.write(f"""
   gcc{v}-cuda{cuda_ver}-ubuntu{ubuntu_version}:
-    image: {repo}:gcc{v}-cuda{cuda_ver}-ubuntu{ubuntu_version}
+    image: {repo}{sep}gcc{v}-cuda{cuda_ver}-ubuntu{ubuntu_version}
     build:
       context: .
       dockerfile: Dockerfile.gcc{v}-cuda{cuda_ver}-ubuntu{ubuntu_version}
@@ -256,7 +257,7 @@ def main():
                     cuda_ver = nvhpc_ver["cuda_ver"]
                     f.write(f"""
   gcc{v}-cuda{cuda_ver}-nvhpc{hpc_ver}-ubuntu{ubuntu_version}:
-    image: {repo}:gcc{v}-cuda{cuda_ver}-nvhpc{hpc_ver}-ubuntu{ubuntu_version}
+    image: {repo}{sep}gcc{v}-cuda{cuda_ver}-nvhpc{hpc_ver}-ubuntu{ubuntu_version}
     build:
       context: .
       dockerfile: Dockerfile.gcc{v}-cuda{cuda_ver}-nvhpc{hpc_ver}-ubuntu{ubuntu_version}
